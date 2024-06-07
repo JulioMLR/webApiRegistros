@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using webApiRegistros.DTOs;
 using webApiRegistros.Entidades;
 
 namespace webApiRegistros.Controllers
@@ -25,16 +26,16 @@ namespace webApiRegistros.Controllers
 
         public async Task<ActionResult<List<Objeto>>> Get() {
 
-            var objetos = await dbContext.Objetos.ToListAsync();
+            var listaObjetos = await dbContext.Objetos.ToListAsync();
 
-            if (objetos.IsNullOrEmpty())
+            if (listaObjetos.IsNullOrEmpty())
             {
 
-                return NotFound("No se encuentran objetos");
+                return NotFound("No se encontraron objetos");
 
             }
-
-            return objetos;
+            
+            return listaObjetos;
         
         }
 
@@ -58,8 +59,14 @@ namespace webApiRegistros.Controllers
 
         [HttpPost]
 
-        public async Task<ActionResult> Post(Objeto objeto)
+        public async Task<ActionResult> Post(ObjetoDTO objetoDTO)
         {
+
+            Objeto objeto = new()
+            {
+                nombre = objetoDTO.nombre,
+                cantidad = objetoDTO.cantidad
+            };
 
             dbContext.Add(objeto);
             await dbContext.SaveChangesAsync();
@@ -87,6 +94,30 @@ namespace webApiRegistros.Controllers
                 return BadRequest("No existe el objeto");
 
             }
+
+            dbContext.Update(objeto);
+            await dbContext.SaveChangesAsync();
+            return Ok();
+
+        }
+
+        [HttpPut("Cantidad")]
+
+        public async Task<ActionResult> Put(int id, int cantidad)
+        {
+
+            var existeObjeto = await dbContext.Objetos.AnyAsync(c => c.id == id);
+
+            if (!existeObjeto)
+            {
+
+                return BadRequest("No existe el objeto");
+
+            }
+
+            Objeto objeto = await dbContext.Objetos.Where(c => c.id == id).FirstAsync();
+
+            objeto.cantidad = cantidad;
 
             dbContext.Update(objeto);
             await dbContext.SaveChangesAsync();

@@ -12,8 +12,8 @@ using webApiRegistros;
 namespace webApiRegistros.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240606184729_Initial")]
-    partial class Initial
+    [Migration("20240607164529_Objeto")]
+    partial class Objeto
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -250,6 +250,9 @@ namespace webApiRegistros.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id"));
 
+                    b.Property<int>("idObjeto")
+                        .HasColumnType("int");
+
                     b.Property<string>("o1")
                         .HasColumnType("nvarchar(max)");
 
@@ -323,15 +326,10 @@ namespace webApiRegistros.Migrations
             modelBuilder.Entity("webApiRegistros.Entidades.Registro", b =>
                 {
                     b.HasOne("webApiRegistros.Entidades.Objeto", "objeto")
-                        .WithMany("Registro")
+                        .WithMany()
                         .HasForeignKey("objetoid");
 
                     b.Navigation("objeto");
-                });
-
-            modelBuilder.Entity("webApiRegistros.Entidades.Objeto", b =>
-                {
-                    b.Navigation("Registro");
                 });
 #pragma warning restore 612, 618
         }

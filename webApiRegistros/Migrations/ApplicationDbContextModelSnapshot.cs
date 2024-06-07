@@ -247,6 +247,9 @@ namespace webApiRegistros.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id"));
 
+                    b.Property<int>("idObjeto")
+                        .HasColumnType("int");
+
                     b.Property<string>("o1")
                         .HasColumnType("nvarchar(max)");
 
@@ -320,15 +323,10 @@ namespace webApiRegistros.Migrations
             modelBuilder.Entity("webApiRegistros.Entidades.Registro", b =>
                 {
                     b.HasOne("webApiRegistros.Entidades.Objeto", "objeto")
-                        .WithMany("Registro")
+                        .WithMany()
                         .HasForeignKey("objetoid");
 
                     b.Navigation("objeto");
-                });
-
-            modelBuilder.Entity("webApiRegistros.Entidades.Objeto", b =>
-                {
-                    b.Navigation("Registro");
                 });
 #pragma warning restore 612, 618
         }

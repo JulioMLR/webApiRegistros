@@ -12,8 +12,8 @@ using webApiRegistros;
 namespace webApiRegistros.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240606182613_Inicial")]
-    partial class Inicial
+    [Migration("20240607164224_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
