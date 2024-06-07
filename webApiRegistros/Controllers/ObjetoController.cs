@@ -74,7 +74,7 @@ namespace webApiRegistros.Controllers
 
         }
 
-        [HttpPut]
+        [HttpPut("All")]
 
         public async Task<ActionResult> Put(int id, Objeto objeto)
         {
@@ -124,9 +124,9 @@ namespace webApiRegistros.Controllers
             return Ok();
 
         }
-
+        
         [HttpDelete]
-
+        
         public async Task<ActionResult> Delete(int id)
         {
 
