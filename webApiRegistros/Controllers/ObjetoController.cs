@@ -22,8 +22,29 @@ namespace webApiRegistros.Controllers
 
         }
 
+        [HttpPost("All")]
+
+        //CREATE OBJETO
+        public async Task<ActionResult> Post(ObjetoDTO objetoDTO)
+        {
+
+            var objeto = new Objeto()
+            {
+
+                nombre = objetoDTO.nombre,
+                cantidad = objetoDTO.cantidad
+
+            };
+
+            dbContext.Add(objeto);
+            await dbContext.SaveChangesAsync();
+            return Ok();
+
+        }
+
         [HttpGet("All")]
 
+        //READ ALL OBJETO
         public async Task<ActionResult<List<Objeto>>> Get() {
 
             var listaObjetos = await dbContext.Objetos.ToListAsync();
@@ -41,6 +62,7 @@ namespace webApiRegistros.Controllers
 
         [HttpGet("Id")]
 
+        //READ ONLY ID OBJETO
         public async Task<ActionResult<Objeto>> GetId(int id)
         {
 
@@ -57,25 +79,28 @@ namespace webApiRegistros.Controllers
 
         }
 
-        [HttpPost]
+        [HttpGet("Cantidad")]
 
-        public async Task<ActionResult> Post(ObjetoDTO objetoDTO)
+        //READ ONLY CANTIDAD
+        public async Task<ActionResult<List<Objeto>>> GetCantidad(int cantidad)
         {
 
-            Objeto objeto = new()
-            {
-                nombre = objetoDTO.nombre,
-                cantidad = objetoDTO.cantidad
-            };
+            var objetos = await dbContext.Objetos.Where(c => c.cantidad == cantidad).ToListAsync();
 
-            dbContext.Add(objeto);
-            await dbContext.SaveChangesAsync();
-            return Ok();
+            if (objetos == null)
+            {
+
+                return NotFound("No se encontraron objetos con esa cantidad");
+
+            }
+
+            return Ok(objetos);
 
         }
 
         [HttpPut("All")]
 
+        //UPDATE ALL OBJETO
         public async Task<ActionResult> Put(int id, Objeto objeto)
         {
 
@@ -103,6 +128,7 @@ namespace webApiRegistros.Controllers
 
         [HttpPut("Cantidad")]
 
+        //UPDATE CANTIDAD IN OBJETO
         public async Task<ActionResult> Put(int id, int cantidad)
         {
 
@@ -125,8 +151,9 @@ namespace webApiRegistros.Controllers
 
         }
         
-        [HttpDelete]
+        [HttpDelete("Objeto")]
         
+        //DELETE OBJETO
         public async Task<ActionResult> Delete(int id)
         {
 

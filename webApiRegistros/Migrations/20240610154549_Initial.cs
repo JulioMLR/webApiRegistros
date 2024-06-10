@@ -65,6 +65,21 @@ namespace webApiRegistros.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Registros",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    o1 = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    o2 = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    o3 = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Registros", x => x.id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "AspNetRoleClaims",
                 columns: table => new
                 {
@@ -171,24 +186,27 @@ namespace webApiRegistros.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Registros",
+                name: "ObjetoRegistro",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    o1 = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    o2 = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    o3 = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    objetoid = table.Column<int>(type: "int", nullable: true)
+                    objetoid = table.Column<int>(type: "int", nullable: false),
+                    registrosid = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Registros", x => x.id);
+                    table.PrimaryKey("PK_ObjetoRegistro", x => new { x.objetoid, x.registrosid });
                     table.ForeignKey(
-                        name: "FK_Registros_Objetos_objetoid",
+                        name: "FK_ObjetoRegistro_Objetos_objetoid",
                         column: x => x.objetoid,
                         principalTable: "Objetos",
-                        principalColumn: "id");
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ObjetoRegistro_Registros_registrosid",
+                        column: x => x.registrosid,
+                        principalTable: "Registros",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
@@ -231,9 +249,9 @@ namespace webApiRegistros.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Registros_objetoid",
-                table: "Registros",
-                column: "objetoid");
+                name: "IX_ObjetoRegistro_registrosid",
+                table: "ObjetoRegistro",
+                column: "registrosid");
         }
 
         /// <inheritdoc />
@@ -255,7 +273,7 @@ namespace webApiRegistros.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "Registros");
+                name: "ObjetoRegistro");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
@@ -265,6 +283,9 @@ namespace webApiRegistros.Migrations
 
             migrationBuilder.DropTable(
                 name: "Objetos");
+
+            migrationBuilder.DropTable(
+                name: "Registros");
         }
     }
 }

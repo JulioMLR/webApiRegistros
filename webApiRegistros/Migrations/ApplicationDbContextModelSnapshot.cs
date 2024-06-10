@@ -220,6 +220,21 @@ namespace webApiRegistros.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("ObjetoRegistro", b =>
+                {
+                    b.Property<int>("objetoid")
+                        .HasColumnType("int");
+
+                    b.Property<int>("registrosid")
+                        .HasColumnType("int");
+
+                    b.HasKey("objetoid", "registrosid");
+
+                    b.HasIndex("registrosid");
+
+                    b.ToTable("ObjetoRegistro");
+                });
+
             modelBuilder.Entity("webApiRegistros.Entidades.Objeto", b =>
                 {
                     b.Property<int>("id")
@@ -247,9 +262,6 @@ namespace webApiRegistros.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id"));
 
-                    b.Property<int>("idObjeto")
-                        .HasColumnType("int");
-
                     b.Property<string>("o1")
                         .HasColumnType("nvarchar(max)");
 
@@ -259,12 +271,7 @@ namespace webApiRegistros.Migrations
                     b.Property<string>("o3")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("objetoid")
-                        .HasColumnType("int");
-
                     b.HasKey("id");
-
-                    b.HasIndex("objetoid");
 
                     b.ToTable("Registros");
                 });
@@ -320,13 +327,19 @@ namespace webApiRegistros.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("webApiRegistros.Entidades.Registro", b =>
+            modelBuilder.Entity("ObjetoRegistro", b =>
                 {
-                    b.HasOne("webApiRegistros.Entidades.Objeto", "objeto")
+                    b.HasOne("webApiRegistros.Entidades.Objeto", null)
                         .WithMany()
-                        .HasForeignKey("objetoid");
+                        .HasForeignKey("objetoid")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.Navigation("objeto");
+                    b.HasOne("webApiRegistros.Entidades.Registro", null)
+                        .WithMany()
+                        .HasForeignKey("registrosid")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using webApiRegistros.DTOs;
 using webApiRegistros.Entidades;
 
 namespace webApiRegistros.Controllers
@@ -20,20 +21,20 @@ namespace webApiRegistros.Controllers
 
         }
 
-        [HttpPost]
+        [HttpPost("Registro")]
 
         //CREATE REGISTRO
-        public async Task<ActionResult> Post(Registro registro)
+        public async Task<ActionResult> Post(RegistroDTO registroDTO)
         {
 
-            var existeObjeto = await dbContext.Objetos.AnyAsync(c => c.id == registro.idObjeto);
-
-            if (!existeObjeto)
+            var registro = new Registro()
             {
 
-                return BadRequest("No existe el objeto");
+                o1 = registroDTO.o1,
+                o2 = registroDTO.o2,
+                o3 = registroDTO.o3
 
-            }
+            };
 
             dbContext.Add(registro);
             await dbContext.SaveChangesAsync();
@@ -41,32 +42,31 @@ namespace webApiRegistros.Controllers
 
         }
 
-        [HttpPost(":id")]
+        [HttpPost("Objeto")]
 
-        public async Task<ActionResult> Post(int idRegistro, int idObjeto)
+        //CREATE OBJETO IN REGISTRO
+        public async Task<ActionResult> PostObjeto(int idRegistro, int idObjeto)
         {
 
-            var existeRegistro = await dbContext.Registros.AnyAsync(c => c.id == idRegistro);
+            var registro = await dbContext.Registros.Include(c => c.objeto).FirstOrDefaultAsync(c => c.id == idRegistro);
 
-            if (!existeRegistro)
+            if (registro == null)
             {
 
-                return BadRequest("No existe el registro");
+                return NotFound("No existe el registro");
 
             }
 
-            var existeObjeto = await dbContext.Objetos.AnyAsync(c => c.id == idObjeto);
+            var objeto = await dbContext.Objetos.FirstOrDefaultAsync(c => c.id == idObjeto);
 
-            if (!existeObjeto)
+            if (objeto == null)
             {
 
-                return BadRequest("No existe el objeto");
+                return NotFound("No existe el objeto");
 
             }
 
-            var registro = await dbContext.Registros.Where(c => c.id == idRegistro).FirstAsync();
-
-            registro.idObjeto = idObjeto;
+            registro.objeto.Add(objeto);
 
             dbContext.Update(registro);
             await dbContext.SaveChangesAsync();
@@ -76,7 +76,7 @@ namespace webApiRegistros.Controllers
 
         [HttpGet("All")]
 
-        //READ ALL
+        //READ ALL REGISTRO
         public async Task<ActionResult<List<Registro>>> Get()
         {
 
@@ -93,16 +93,15 @@ namespace webApiRegistros.Controllers
 
         }
 
-
         [HttpGet("Id")]
 
-        //READ ONLY ID
+        //READ ONLY ID REGISTRO
         public async Task<ActionResult<Registro>> GetId(int id)
         {
 
-            var listaRegistros = await dbContext.Registros.Where(c => c.id == id).Include(c => c.objeto).ToListAsync();
+            var listaRegistros = await dbContext.Registros.Include(c => c.objeto).FirstOrDefaultAsync(c => c.id == id);
 
-            if (listaRegistros.IsNullOrEmpty())
+            if (listaRegistros == null)
             {
 
                 return BadRequest("No se encontro el registro");
@@ -112,8 +111,6 @@ namespace webApiRegistros.Controllers
             return Ok(listaRegistros);
 
         }
-
-
 
         [HttpGet("Campo")]
 
@@ -166,15 +163,23 @@ namespace webApiRegistros.Controllers
 
         [HttpGet("Objeto")]
 
+        //READ ONLY ID OBJETO
         public async Task<ActionResult<List<Objeto>>> GetObjetos(int idObjeto)
         {
 
-            var listaRegistros = await dbContext.Registros.Where(c => c.idObjeto == idObjeto).ToListAsync();
+            List<Registro> listaRegistros = new List<Registro>();
 
-            if (listaRegistros.IsNullOrEmpty())
+            var registros = await dbContext.Registros.Include(c => c.objeto).ToListAsync();
+
+            foreach(var registro in registros)
             {
 
-                return NotFound("No se encontraron registros");
+                if(registro.objeto.Find(c => c.id == idObjeto) != null)
+                {
+
+                    listaRegistros.Add(registro);
+
+                }
 
             }
 
@@ -182,33 +187,77 @@ namespace webApiRegistros.Controllers
 
         }
 
-        //UPDATE
-        [HttpPut]
-        public async Task<ActionResult> Put(Registro registro, int id)
+        [HttpPut("All")]
+
+        //UPDATE REGISTRO
+        public async Task<ActionResult> Put(RegistroIdDTO registroDTO, int id)
         {
 
-            if (registro.id != id)
+            if (registroDTO.id != id)
             {
 
                 return BadRequest("El Id no coincide con el establecido");
 
             }
 
-            var existeRegistro = await dbContext.Registros.AnyAsync(c => c.id == registro.id);
+            var registro = await dbContext.Registros.FirstOrDefaultAsync(c => c.id == registroDTO.id);
 
-            if (!existeRegistro)
+            if (registro == null)
             {
 
                 return BadRequest("No existe el registro con el Id");
 
             }
 
-            var existeObjeto = await dbContext.Objetos.AnyAsync(c => c.id == registro.id);
+            registro.o1 = registroDTO.o1;
+            registro.o2 = registroDTO.o2;
+            registro.o3 = registroDTO.o3;
 
-            if (!existeObjeto)
+            dbContext.Update(registro);
+            await dbContext.SaveChangesAsync();
+            return Ok();
+
+        }
+
+        [HttpPut("Campo")]
+
+        //UPDATE CAMPO IN REGISTRO
+        public async Task<ActionResult> PutCampo(string cambio, int idRegistro, string campo)
+        {
+
+            var registro = await dbContext.Registros.FirstOrDefaultAsync(c => c.id == idRegistro);
+
+            if (registro == null)
             {
 
-                return BadRequest("No existe el objeto con el Id");
+                return BadRequest("No existe el registro con el Id");
+
+            }
+
+            switch (campo)
+            {
+
+                case "o1":
+
+                    registro.o1 = cambio;
+
+                    break;
+
+                case "o2":
+
+                    registro.o2 = cambio;
+
+                    break;
+
+                case "o3":
+
+                    registro.o3 = cambio;
+
+                    break;
+
+                default:
+
+                    return BadRequest("No existe el campo");
 
             }
 
@@ -218,9 +267,9 @@ namespace webApiRegistros.Controllers
 
         }
 
-        //DELETE
-        [HttpDelete]
+        [HttpDelete("Registro")]
 
+        //DELETE REGISTRO
         public async Task<ActionResult> Delete(int id)
         {
 
@@ -240,6 +289,38 @@ namespace webApiRegistros.Controllers
 
             });
 
+            await dbContext.SaveChangesAsync();
+            return Ok();
+
+        }
+
+        [HttpDelete("Objeto")]
+
+        //DELETE OBJETO IN REGISTRO
+        public async Task<ActionResult> DeleteObjeto(int idRegistro, int idObjeto)
+        {
+
+            var registro = await dbContext.Registros.Include(c => c.objeto).FirstOrDefaultAsync(c => c.id == idRegistro);
+
+            if (registro == null)
+            {
+
+                return NotFound("No existe el registro");
+
+            }
+
+            var objeto = await dbContext.Objetos.FirstOrDefaultAsync(c => c.id == idObjeto);
+
+            if (objeto == null)
+            {
+
+                return NotFound("No existe el objeto");
+
+            }
+
+            registro.objeto.Remove(objeto);
+
+            dbContext.Update(registro);
             await dbContext.SaveChangesAsync();
             return Ok();
 
